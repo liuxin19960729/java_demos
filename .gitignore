@@ -1,1 +1,4 @@
 /.idea/
+# Build targets
+/target
+*/target

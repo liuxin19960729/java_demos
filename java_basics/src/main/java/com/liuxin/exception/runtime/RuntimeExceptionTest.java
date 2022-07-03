@@ -2,9 +2,9 @@ package com.liuxin.exception.runtime;
 
 import java.io.IOException;
 
-public class ThrowNotCatchRuntimeException {
+public class RuntimeExceptionTest {
     public static void main(String[] args) {
-          catchE();
+        noCatchE();
     }
 
 
