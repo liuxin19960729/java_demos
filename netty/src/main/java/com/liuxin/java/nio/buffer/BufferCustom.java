@@ -30,9 +30,49 @@ public class BufferCustom {
 * isReadOnly() true 只允许可读
 * if(!buf.isReadOnly()){可对缓冲器进行类容的写取 }
 *
+* 若对只读Buffer进行修改throwReadOnlyBufferException
 *
 *
-*
-*
-*
+*    public final Buffer flip() {
+        limit = position;
+        position = 0;
+        mark = -1;
+        return this;
+    }
+*   //倒回
+*    public final Buffer rewind() {
+        position = 0;
+        mark = -1;
+        return this;
+    }
+    *
+    public final boolean hasRemaining() {
+        return position < limit;
+    }
+* public final int remaining() {
+        return limit - position;
+    }
+
+    清除所有数据
+    public final Buffer clear() {
+        position = 0;
+        limit = capacity;
+        mark = -1;
+        return this;
+    }
+    *
+    *
+    *
+    *
+    * mark() 作用
+    * 在reset() 里面使用
+    * //将position重置到上一次mark的位置
+    * public final Buffer reset() {
+        int m = mark;
+        if (m < 0)
+            throw new InvalidMarkException();
+        position = m;
+        return this;
+    }
+    *
 **/
