@@ -2,12 +2,15 @@ package com.liuxin.java.nio.buffer;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.LongBuffer;
 
 public class DirectBuffer {
     public static void main(String[] args) {
         ByteBuffer buffer = ByteBuffer.allocateDirect(10);
         boolean direct = buffer.isDirect();
         System.out.println(direct);
+        LongBuffer longBuffer = buffer.asLongBuffer();
+
     }
 }
 
@@ -33,4 +36,14 @@ public class DirectBuffer {
 *  buffer 继承过来的  isDirect()  --每个都有一个这个方法
 * boolean direct = buffer.isDirect();
 * System.out.println(direct);
+*
+*
+* ByteBuffer 转换为其他类型视图
+*    asLongBuffer() asIntBuffer()....
+*
+*
+* 数据元素视图
+*    buffer.getChar()
+*
+*
 * */

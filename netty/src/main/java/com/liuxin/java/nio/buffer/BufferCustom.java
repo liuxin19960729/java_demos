@@ -1,7 +1,6 @@
 package com.liuxin.java.nio.buffer;
 
-import java.nio.Buffer;
-import java.util.Spliterator;
+
 
 public class BufferCustom {
     public static void main(String[] args) {

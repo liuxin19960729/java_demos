@@ -4,110 +4,18 @@
     <groupId>org.example</groupId>
     <artifactId>netty</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>netty Tapestry 5 Application</name>
-    <packaging>war</packaging>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <tapestry-version>5.8.2</tapestry-version>
-        <jackson-version>2.13.1</jackson-version>
-        <log4j-version>2.17.2</log4j-version>
-        <json-version>1.1.4</json-version>
-        <junit-version>5.8.2</junit-version>
-        <yasson-version>2.0.4</yasson-version>
-        <servlet-version>3.1.0</servlet-version>
-        <maven-compiler-version>3.8.1</maven-compiler-version>
-        <maven-surefire-version>3.0.0-M5</maven-surefire-version>
-        <maven-war-version>3.3.1</maven-war-version>
-        <maven-jetty-version>10.0.6</maven-jetty-version>
-    </properties>
-    <repositories>
-        <repository>
-            <id>apache-staging</id>
-            <url>https://repository.apache.org/content/repositories/staging/</url>
-        </repository>
-    </repositories>
-    <dependencies>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>4.1.65.Final</version>
-        </dependency>
-    </dependencies>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <id>enforce-maven</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireMavenVersion>
-                                    <version>3.5.0</version>
-                                </requireMavenVersion>
-                            </rules>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>${maven-war-version}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-version}</version>
                 <configuration>
-                    <release>11</release>
-                    <excludes>
-                        <exclude>org/example/spring/*</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven-surefire-version}</version>
-                <configuration>
-                    <systemPropertyVariables>
-                        <propertyName>firefox</propertyName>
-                    </systemPropertyVariables>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-junit-platform</artifactId>
-                        <version>${maven-surefire-version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-testng</artifactId>
-                        <version>${maven-surefire-version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>${maven-jetty-version}</version>
-                <configuration>
-                    <scan>10</scan>
-                    <webAppSourceDirectory>src/main/webapp</webAppSourceDirectory>
-                    <webApp>
-                        <contextPath>/</contextPath>
-                    </webApp>
-                    <httpConnector>
-                        <port>8080</port>
-                    </httpConnector>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+    <name>netty Tapestry 5 Application</name>
+    <packaging>war</packaging>
 </project>
