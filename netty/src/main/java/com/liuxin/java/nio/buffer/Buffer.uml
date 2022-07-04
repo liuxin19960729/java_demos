@@ -60,7 +60,7 @@
       <point x="0.0" y="634.0" />
     </edge>
   </edges>
-  <settings layout="Hierarchic Group" zoom="0.1891891891891892" x="1367.0" y="2173.0" />
+  <settings layout="Hierarchic Group" zoom="0.5891891891891892" x="1367.0000000000005" y="3618.6428571428573" />
   <SelectedNodes>
     <node>java.nio.Buffer</node>
   </SelectedNodes>
