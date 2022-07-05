@@ -254,14 +254,9 @@ Selector
     private final Set<SelectionKey> cancelledKeys = new HashSet<SelectionKey>();
   
 
-    public abstract int selectNow() throws IOException;
+  
 
-    public abstract int select(long timeout)
-        throws IOException;
-
-    public abstract int select() throws IOException;
-
-    public abstract Selector wakeup();
+    
 
 
 select()  select(long timeout) selectNow()
@@ -272,14 +267,14 @@ select()  select(long timeout) selectNow()
            for(SelectionKey key cancelsKeys){
                 if(registerKeys) registerKeys.remove(key) 
                 if(SelectedKeys) registerKeys.remove(key) 
-                channel.register=false 
+                channel.register=false //注销
             }
          cancelKeys.clear() 清除所有元素
       }
     
 2.
-     cpyRegisterKeys_ops = RegisterKeys_ops ;拷贝完成之后 
-     如果并发修改 RegisterKeys_ops 或在后面修改也对拷贝的ops不会产生任何修改影响
+     
+   在check 过程中 是加入锁来进行保证在eheck 过程中不会受影响
  
    OSCheckIOOperaState(ops);//操作系统查询每个通道对应的操作集合的操作数的状态
    
@@ -289,15 +284,74 @@ select()  select(long timeout) selectNow()
         系统调用完成(OS对每个channel的操作状态是否准备就绪进行查询)
     sleep 一段时间,没有准备就绪的通道不执行任何操作 
                  已经就绪的(至少interestOps一种已经准备就绪) ,执行下面两种情况的一种 
-                    1.key(准备就绪)，但是没有在SelectedKeys 集合里面 清空readOPS 集合
-                    已经在SelectedKeys集合将通过maks设置readOps集合
-                    2.
+                    1.key(准备就绪)，但是没有在SelectedKeys 集合里面 清空readOPS 集合,Os并使用mask设置ReadOps
+                    (全新的readOps)
+                    2.存在SeletedKeys,key 的readOps 集合会被OS准备好mask 进行更新
+                        note:之前read 不会被清除 (采用的是累积法)
+                        ReadOps|=maks;
+3.执行步骤2可能花费很长时间,在并发的时候可能SelectionKey.cancel()方法执行,执行完步骤二,重新执行步骤一
+从RegisterKeys 何SelectedKeys 集合删除 cancel key  把register的状态同步到Channel 上面(注销Selector上的channel)
+
+4.
+ int select = selector.select(); 返回的值 read集合在步骤二修改的数量 !=SelectedKeys的数量
+ addSeletKeys 数量
+   
+
+注意 返回值 是add seletedKeys 的key的个数 不是 seletedKeys的全部个数 或者修改read集合的个数
+(seletedKeys+非SeletedKeys(后面readOps设置在加入的))
+
+  完全非阻塞 没有准备就绪马上返回0
+  public abstract int selectNow() throws IOException;
+    
+    public abstract int select(long timeout)// timeout0 无限等待
+        throws IOException;
+    没有就绪时无限阻塞, 
+    public abstract int select() throws IOException;
+        return 0 没有准备就绪的时 wakeup 在其他线程调用
+
+
+叫醒 call select()阻塞的方法
+public abstract Selector wakeup();//在其他线程调用wakeup 唤醒select() 阻塞
+
+close() 唤醒阻塞线程(立即返回) 在下一执
+  在调用其他方法之后会 throw ClosedSelectorException 
+
+ selector.isOpen() check
+
+
 ``` 
 ### selector.select()
 ```
 选择器 是永远不会改变 interest 集合
 
+可以自己改变 key.interstOps(ops)
+
 ```
+## key管理
+```
+SeletedKeys 不会自动删(允许用户自己)
+
+如果一个 key 存在 SelectedKeys  若一个Ready 要修改 ，则只会被设置(清理设置：只有未在SeletedKeys集合
+要添加进入集合时才会进行清理在设置)
+
+清除就绪状态：从SelectedKeys 删除对应的key(告诉选择器我看到了就绪的操作，并对他进行了处理)
+
+```
+## 并发性
+```
+Selecor 对象是线程安全的
+
+keys 和 selectedKeys 是返回的私有Set的一个引用
+keys 只读
+
+selectedKeys 允许 删除 操作,添加操作不允许
+note:多线程共享删除的操作一定要注意(可能造成Set视图造成破坏)
+
+
+```
+
+
+
 
 
 
