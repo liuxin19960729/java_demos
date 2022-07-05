@@ -243,14 +243,59 @@ selector.close();
 selector.isOpen() 判断Selector是否是打开的状态
 非打开 调用方法 throwClosedSelectException
 
+Selector 
+    
+    与选择器关联已经注册的集合不能做任何修改
+    public abstract Set<SelectionKey> keys();//ReadOnly Set 
+    //注册的集合的子集  已经准备就绪的子集  可以移除key 但是 不能添加
+    public abstract Set<SelectionKey> selectedKeys();
+
+     AbstractSelector   cancel()方法调用过的键
+    private final Set<SelectionKey> cancelledKeys = new HashSet<SelectionKey>();
+  
+
+    public abstract int selectNow() throws IOException;
+
+    public abstract int select(long timeout)
+        throws IOException;
+
+    public abstract int select() throws IOException;
+
+    public abstract Selector wakeup();
 
 
-```
+select()  select(long timeout) selectNow()
+执行流程
+
+1.
+     if(!cancelKeys.impty()){
+           for(SelectionKey key cancelsKeys){
+                if(registerKeys) registerKeys.remove(key) 
+                if(SelectedKeys) registerKeys.remove(key) 
+                channel.register=false 
+            }
+         cancelKeys.clear() 清除所有元素
+      }
+    
+2.
+     cpyRegisterKeys_ops = RegisterKeys_ops ;拷贝完成之后 
+     如果并发修改 RegisterKeys_ops 或在后面修改也对拷贝的ops不会产生任何修改影响
+ 
+   OSCheckIOOperaState(ops);//操作系统查询每个通道对应的操作集合的操作数的状态
+   
+    select()  两种
+    
+    select(timeOut)
+        系统调用完成(OS对每个channel的操作状态是否准备就绪进行查询)
+    sleep 一段时间,没有准备就绪的通道不执行任何操作 
+                 已经就绪的(至少interestOps一种已经准备就绪) ,执行下面两种情况的一种 
+                    1.key(准备就绪)，但是没有在SelectedKeys 集合里面 清空readOPS 集合
+                    已经在SelectedKeys集合将通过maks设置readOps集合
+                    2.
+``` 
 ### selector.select()
 ```
 选择器 是永远不会改变 interest 集合
-
-
 
 ```
 
