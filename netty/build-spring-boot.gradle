@@ -60,7 +60,7 @@ dependencies {
     //implementation("org.apache.tapestry:tapestry-beanvalidator:$versions.tapestry")
     //implementation("org.apache.tapestry:tapestry-upload:${tapestry}")
 
-    // Test
+    // SelectableChannel_Selector_1
     testImplementation("org.apache.tapestry:tapestry-test:${versions.tapestry}")
     testImplementation("org.junit.jupiter:junit-jupiter:${versions.junit}")
 
@@ -86,7 +86,7 @@ sourceSets {
     testUnitTapestry {
         java {
             srcDir "$projectDir/src/test/java"
-            include 'org/example/tapestry/unit/*/*Test.java'
+            include 'org/example/tapestry/unit/*/*SelectableChannel_Selector_1.java'
         }
         compileClasspath += main.output + test.output
         runtimeClasspath += main.output + test.output
@@ -94,7 +94,7 @@ sourceSets {
     testIntegrationTapestry {
         java {
             srcDir "$projectDir/src/test/java"
-            include 'org/example/tapestry/integration/*/*Test.java'
+            include 'org/example/tapestry/integration/*/*SelectableChannel_Selector_1.java'
         }
         compileClasspath += main.output + test.output
         runtimeClasspath += main.output + test.output

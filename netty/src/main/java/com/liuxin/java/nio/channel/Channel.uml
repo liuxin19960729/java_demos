@@ -3,23 +3,56 @@
   <ID>JAVA</ID>
   <OriginalElement>java.nio.channels.Channel</OriginalElement>
   <nodes>
-    <node x="23.0" y="136.0">java.io.Closeable</node>
-    <node x="4.5" y="0.0">java.lang.AutoCloseable</node>
-    <node x="0.0" y="272.0">java.nio.channels.Channel</node>
+    <node x="55.0" y="717.0">java.nio.channels.InterruptibleChannel</node>
+    <node x="399.5" y="173.0">java.nio.channels.SelectableChannel</node>
+    <node x="111.5" y="-3.0">java.io.Closeable</node>
+    <node x="452.0" y="627.0">java.nio.channels.spi.AbstractInterruptibleChannel</node>
+    <node x="999.5" y="83.0">java.nio.channels.spi.AbstractSelectableChannel</node>
+    <node x="373.0" y="-3.0">java.lang.AutoCloseable</node>
+    <node x="88.5" y="299.0">java.nio.channels.Channel</node>
   </nodes>
   <notes />
   <edges>
-    <edge source="java.io.Closeable" target="java.lang.AutoCloseable">
-      <point x="0.0" y="-43.0" />
-      <point x="0.0" y="43.0" />
+    <edge source="java.nio.channels.SelectableChannel" target="java.nio.channels.spi.AbstractInterruptibleChannel">
+      <point x="0.0" y="187.0" />
+      <point x="0.0" y="-133.0" />
+    </edge>
+    <edge source="java.nio.channels.spi.AbstractInterruptibleChannel" target="java.nio.channels.InterruptibleChannel">
+      <point x="-188.0" y="0.0" />
+      <point x="145.0" y="0.0" />
+    </edge>
+    <edge source="java.nio.channels.spi.AbstractInterruptibleChannel" target="java.nio.channels.Channel">
+      <point x="0.0" y="133.0" />
+      <point x="640.0" y="960.0" />
+      <point x="0.0" y="960.0" />
+      <point x="0.0" y="360.0" />
+      <point x="-111.5" y="0.0" />
     </edge>
     <edge source="java.nio.channels.Channel" target="java.io.Closeable">
       <point x="0.0" y="-61.0" />
       <point x="0.0" y="43.0" />
     </edge>
+    <edge source="java.nio.channels.spi.AbstractSelectableChannel" target="java.nio.channels.SelectableChannel">
+      <point x="-240.5" y="0.0" />
+      <point x="240.5" y="0.0" />
+    </edge>
+    <edge source="java.io.Closeable" target="java.lang.AutoCloseable">
+      <point x="88.5" y="0.0" />
+      <point x="-107.0" y="0.0" />
+    </edge>
+    <edge source="java.nio.channels.InterruptibleChannel" target="java.nio.channels.Channel">
+      <point x="0.0" y="-43.0" />
+      <point x="0.0" y="61.0" />
+    </edge>
+    <edge source="java.nio.channels.SelectableChannel" target="java.nio.channels.Channel">
+      <point x="-240.5" y="0.0" />
+      <point x="111.5" y="0.0" />
+    </edge>
   </edges>
-  <settings layout="Hierarchic Group" zoom="1.0" x="107.0" y="173.0" />
-  <SelectedNodes />
+  <settings layout="Orthogonal" zoom="0.6591478696741855" x="1089.9999999999998" y="640.6920152091254" />
+  <SelectedNodes>
+    <node>java.nio.channels.SelectableChannel</node>
+  </SelectedNodes>
   <Categories>
     <Category>Methods</Category>
   </Categories>
