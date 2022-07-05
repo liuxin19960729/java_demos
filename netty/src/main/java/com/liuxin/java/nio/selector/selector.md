@@ -345,12 +345,100 @@ keys 和 selectedKeys 是返回的私有Set的一个引用
 keys 只读
 
 selectedKeys 允许 删除 操作,添加操作不允许
-note:多线程共享删除的操作一定要注意(可能造成Set视图造成破坏)
+note:多线程共享删除的操作一定要注意(可能造成Set视图(Iterator)造成破坏)
 
+
+Selector 存在三个集合,在并发程序下对三个集合直接或间接修改都会造成副作用
+keys:注册集合  register()
+selectedKeys:选择集合remove()
+cancelKeys:channel unregister 集合   key.cancel()
+
+
+select()的同步策略
+
+ private int lockAndDoSelect(long var1) throws IOException {
+        synchronized(this) {//selector 对象 1
+            if (!this.isOpen()) {
+                throw new ClosedSelectorException();
+            } else {
+                int var10000;
+                synchronized(this.publicKeys) {//已经注册的键 2
+                    synchronized(this.publicSelectedKeys) {//已经选择的键 3
+                        var10000 = this.doSelect(var1);
+                    }
+                }
+
+                return var10000;
+            }
+        }
+
+
+SelectionKey cancel()
+
+
+    public final void cancel() {
+        // Synchronizing "this" to prevent this key from getting canceled
+        // multiple times by different threads, which might cause race
+        // condition between selector's select() and channel's close().
+        synchronized (this) {
+            if (valid) {
+                valid = false;
+                ((AbstractSelector)selector()).cancel(this);
+            }
+        }
+    }
+
+
+AbstractSelector cancle()
+    void cancel(SelectionKey k) {                       // package-private
+        synchronized (cancelledKeys) {
+            cancelledKeys.add(k);
+        }
+    }
+
+
+close() 和 select() 都会阻塞直到这个过程结束
 
 ```
+## 异步关闭功能
+```
+多线程情况下任何时候都可能 selector.colse()  key.cancel()
+
+ private int lockAndDoSelect(long var1) throws IOException {
+        synchronized(this) {//selector 对象 1
+            if (!this.isOpen()) {
+                throw new ClosedSelectorException();
+            } else {
+                int var10000;
+                synchronized(this.publicKeys) {//已经注册的键 2
+                    synchronized(this.publicSelectedKeys) {//已经选择的键 3
+                        var10000 = this.doSelect(var1);
+                    }
+                }
+
+                return var10000;
+            }
+        }
+
+    public void implCloseSelector() throws IOException {
+        this.wakeup(); //1
+        synchronized(this) {//2
+            synchronized(this.publicKeys) {//3
+                synchronized(this.publicSelectedKeys) {//4
+                    this.implClose();
+                }
+            }
+
+        }
+    }
 
 
+seletc() 无限期阻塞
+另一个线程 close() 
+//1 执行 wakeUp() selector() 苏醒 向下执行
+//2 抢 selector   punlicKeys 和 selectedKeys 锁
+//执行  this.implClose(); 直到结束 所有SlectionCancel() 和 channel 退出选择器
+```
 
 
 

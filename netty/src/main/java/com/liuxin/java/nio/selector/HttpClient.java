@@ -28,6 +28,8 @@ public class HttpClient {
             Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
             while (iterator.hasNext()) {
                 SelectionKey next = iterator.next();
+//                next.interestOps()
+                selector.isOpen();
                 if (next.isConnectable()) {
                     SocketChannel channel_ = (SocketChannel) next.channel();
                     isConnect = channel_.finishConnect();
