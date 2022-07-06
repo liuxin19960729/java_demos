@@ -178,8 +178,75 @@ exclusive lock r+w 权限
 
 size可以大于文件带下
 
+要写入该区域数据 先把该区域锁住
+
+例
+[      [     ]  [   lock    ] [   ]          ]
+
+我锁住一块区域,然而 position 超过 lock 则后面区域写的那块区域不会保证保护
+
+
+if(lock()){//阻塞到知道获得锁
+
+}
+
+threa2:
+    thread1  filechannel.close()  // 抛出 asynchrousCloseException()
+    thread.interrupt() FileLockInterruptionException,如果在调用lock()之前
+     interrupt已经被设置也会 throw FileLockInterruptionException
+
+trylock() 飞阻塞
+```
+## FileChannel.map()  MappedByteBuffer
+```
+map() file --mapping -- byteBuffer
+建立一个虚拟内存映射
+
+虚拟内存:
+    内核地址空间和虚拟地址映射到同一地址
+
+
+我做的修改会对文件的其他人可见
+
+
+FileChannel.MapMode.PRIVATE 在写时拷贝 
+   put() 修改 只有MappedByteBuffer 可以看到
+   必须 rw权限打开
+
+若文件大小发生变化 则 mmap buffer 可能部分也可能全部都不能访问
+
+mapped buf 内存在jvm堆外
+
+
+API 介绍
+
+channel.map()  文件是否读取到内存(从磁盘) 取决于 OS的实现--可能只是建立了映射在虚拟页上
+
+process  java heap  heap堆外
+   1.在堆外找到虚拟内存区域
+   2.加载数据到kernel buffer
+   3.堆外内存----------kernel 之间做映射 
+       也验证(防止读取错误) 
+        
+note:磁盘读取单位 4kb or 512 byte ,现在一般 4kb
+现在 内存也分页 一页4kb(大多数情况)
+
+
+public final boolean isLoaded() 
+
+public final MappedByteBuffer load()
+    加载整个文件为常驻内存
+
+public final MappedByteBuffer force()
 
 ```
+
+
+
+
+
+
+
 
 
 

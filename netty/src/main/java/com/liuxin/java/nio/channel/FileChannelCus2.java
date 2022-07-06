@@ -1,16 +1,14 @@
 package com.liuxin.java.nio.channel;
 
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 
-public class FileChannelCus {
+public class FileChannelCus2 {
     public static void main(String[] args) throws IOException {
-        String rootPath = FileChannelCus.class.getClassLoader().getResource(".").getPath();
+        String rootPath = FileChannelCus2.class.getClassLoader().getResource(".").getPath();
 //        String packagePath = FileChannelCus.class.getPackage().getName().replaceAll("\\.", File.separator);
         String filename = "file";
         String completePath = rootPath + filename;

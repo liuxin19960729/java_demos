@@ -20,7 +20,6 @@ public class UseChannel2 {
     private static void copy(ReadableByteChannel red, WritableByteChannel wri) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocateDirect(16 * 1024);
         while (red.read(buffer) != -1) {
-            buffer.flip();
             wri.write(buffer);
             buffer.compact();
         }
