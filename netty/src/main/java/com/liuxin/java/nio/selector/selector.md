@@ -207,13 +207,7 @@ key.cancle() 终结 channel key  selector 三者关系(取消注册)
 
 isValid() check 是否 channel 还注册在selector
 
-
-
-
 ```
-**note:key.cancle()  key.isVaild()==false 但是 channel.isRegister()==true 原因:selector会<br>
-将取消的key 放在取消集合，驻车不会立即取消,再次selector,select()时才会把取消key集合删除掉,在同步channel注册状态为非注册**
- 
 ### ops相关
 ```
 int i = key.readyOps();//ready 好要操作的集合 
@@ -227,221 +221,127 @@ key.interestOps(ops);//改变注册的值
 note: key.interestOps(ops) 改变不会立即改变 会在下一次seletor.seletc() 才正式改变
 ``` 
 
-## Selector
+
+
+
+
+
+## selet() 三种方式 和 select()执行流程
 ```
-选择器对象控制着注册他之上SelectableChannel 的选择过程
-
-Selector selector = Selector.open();// 静态实例化Selector对象 SPI 发送请求 
-
-
-
-
-selector.close();
-   1.释放selector 占用的资源 
-   2.将所有选择key设置无效(检查是否有效  key.isValid())
-
-selector.isOpen() 判断Selector是否是打开的状态
-非打开 调用方法 throwClosedSelectException
-
-Selector 
-    
-    与选择器关联已经注册的集合不能做任何修改
-    public abstract Set<SelectionKey> keys();//ReadOnly Set 
-    //注册的集合的子集  已经准备就绪的子集  可以移除key 但是 不能添加
-    public abstract Set<SelectionKey> selectedKeys();
-
-     AbstractSelector   cancel()方法调用过的键
-    private final Set<SelectionKey> cancelledKeys = new HashSet<SelectionKey>();
+1.cancelKeys 的检查和 publicKeys 和 selectedKeys 的删除
+ channel 注册Selector 的属性 状态修改 (cancls)
+2.检查 interst键的集合
+   syn(selector)
+     syn(pulicKeys)
+         syc(selectedKeys)
+               doselect() OS在select()期间这两个set集合不会受到任何影响
   
+ 先让当前线程睡眠(block)-->os查询-->恢复线程执行
+ os查询:会对每个通道interstOps 查询是否就绪,并做下面的操作
+    coun=0
+    1.channel key 没有 在seletedKeys  清空 readOps 设置新的readOps count++;
+    2.已经在seletedKeys 的 会  readOps|=mask (note 不会清除)
+      
+ doselect()  有三种策略
+    select(timeout) 查询有一个时间限制 
+    select() 阻塞到有准备好的 
+    selectNow() 查询到没有准备好的立即返回
 
-  
+3.cancleKeys 在阻塞阶段不保证其他线程不执行SelectionKey.cancel(),在执行完2之后再执行一次1
+  (即使执行完也不保证剩下的key不会cancel())
+4.select() 返回一个int值 add到SelectedKeys 的个数
 
-    
 
+select() 流程
+       this.processDeregisterQueue(); 处理cancleKeys队列 1
 
-select()  select(long timeout) selectNow()
-执行流程
-
-1.
-     if(!cancelKeys.impty()){
-           for(SelectionKey key cancelsKeys){
-                if(registerKeys) registerKeys.remove(key) 
-                if(SelectedKeys) registerKeys.remove(key) 
-                channel.register=false //注销
+            int var7;
+            try {
+                this.begin();
+                var7 = this.kqueueWrapper.poll(var1);//2 os 查询是否查询到
+            } finally {
+                this.end();
             }
-         cancelKeys.clear() 清除所有元素
-      }
-    
-2.
-     
-   在check 过程中 是加入锁来进行保证在eheck 过程中不会受影响
- 
-   OSCheckIOOperaState(ops);//操作系统查询每个通道对应的操作集合的操作数的状态
-   
-    select()  两种
-    
-    select(timeOut)
-        系统调用完成(OS对每个channel的操作状态是否准备就绪进行查询)
-    sleep 一段时间,没有准备就绪的通道不执行任何操作 
-                 已经就绪的(至少interestOps一种已经准备就绪) ,执行下面两种情况的一种 
-                    1.key(准备就绪)，但是没有在SelectedKeys 集合里面 清空readOPS 集合,Os并使用mask设置ReadOps
-                    (全新的readOps)
-                    2.存在SeletedKeys,key 的readOps 集合会被OS准备好mask 进行更新
-                        note:之前read 不会被清除 (采用的是累积法)
-                        ReadOps|=maks;
-3.执行步骤2可能花费很长时间,在并发的时候可能SelectionKey.cancel()方法执行,执行完步骤二,重新执行步骤一
-从RegisterKeys 何SelectedKeys 集合删除 cancel key  把register的状态同步到Channel 上面(注销Selector上的channel)
 
-4.
- int select = selector.select(); 返回的值 read集合在步骤二修改的数量 !=SelectedKeys的数量
- addSeletKeys 数量
-   
-
-注意 返回值 是add seletedKeys 的key的个数 不是 seletedKeys的全部个数 或者修改read集合的个数
-(seletedKeys+非SeletedKeys(后面readOps设置在加入的))
-
-  完全非阻塞 没有准备就绪马上返回0
-  public abstract int selectNow() throws IOException;
-    
-    public abstract int select(long timeout)// timeout0 无限等待
-        throws IOException;
-    没有就绪时无限阻塞, 
-    public abstract int select() throws IOException;
-        return 0 没有准备就绪的时 wakeup 在其他线程调用
-
-
-叫醒 call select()阻塞的方法
-public abstract Selector wakeup();//在其他线程调用wakeup 唤醒select() 阻塞
-
-close() 唤醒阻塞线程(立即返回) 在下一执
-  在调用其他方法之后会 throw ClosedSelectorException 
-
- selector.isOpen() check
-
-
-``` 
-### selector.select()
-```
-选择器 是永远不会改变 interest 集合
-
-可以自己改变 key.interstOps(ops)
+            this.processDeregisterQueue();//3
+            return this.updateSelectedKeys(var7); //4
 
 ```
-## key管理
+
+## 选择停止
+### wakeup()
+```java
+//提供从被阻塞的select()方法中优雅的退出功能
+
+public class WakeupTest {
+    public static void main(String[] args) throws IOException, InterruptedException {
+        Selector selector = Selector.open();
+        Thread other = new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+                System.out.println("other start");
+                selector.wakeup();//先于main线程执行
+                System.out.println("other end");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        other.start();
+        int i = 0;
+        while (true) {
+            if (i==0){
+                Thread.sleep(5000);
+            }
+            System.out.println("while: start" + i);
+            selector.select();//由于其他线程在select()执行之前调用了wakeup,所以会立即返回,下一次将正常执行
+            System.out.println("while: end" + i);
+            i++;
+        }
+    }
+}
+
+
 ```
-SeletedKeys 不会自动删(允许用户自己)
-
-如果一个 key 存在 SelectedKeys  若一个Ready 要修改 ，则只会被设置(清理设置：只有未在SeletedKeys集合
-要添加进入集合时才会进行清理在设置)
-
-清除就绪状态：从SelectedKeys 删除对应的key(告诉选择器我看到了就绪的操作，并对他进行了处理)
-
+## close()
 ```
-## 并发性
-```
-Selecor 对象是线程安全的
+阻塞线程唤醒 
+通道(SelectableChannel deregister  和 key cancel)
+    protected void implClose() throws IOException {
+        if (!this.closed) {
+            this.closed = true;
+            synchronized(this.interruptLock) {
+                this.interruptTriggered = true;
+            }
 
-keys 和 selectedKeys 是返回的私有Set的一个引用
-keys 只读
+            FileDispatcherImpl.closeIntFD(this.fd0);
+            FileDispatcherImpl.closeIntFD(this.fd1);
+            if (this.kqueueWrapper != null) {
+                this.kqueueWrapper.close();
+                this.kqueueWrapper = null;
+                this.selectedKeys = null;
 
-selectedKeys 允许 删除 操作,添加操作不允许
-note:多线程共享删除的操作一定要注意(可能造成Set视图(Iterator)造成破坏)
-
-
-Selector 存在三个集合,在并发程序下对三个集合直接或间接修改都会造成副作用
-keys:注册集合  register()
-selectedKeys:选择集合remove()
-cancelKeys:channel unregister 集合   key.cancel()
-
-
-select()的同步策略
-
- private int lockAndDoSelect(long var1) throws IOException {
-        synchronized(this) {//selector 对象 1
-            if (!this.isOpen()) {
-                throw new ClosedSelectorException();
-            } else {
-                int var10000;
-                synchronized(this.publicKeys) {//已经注册的键 2
-                    synchronized(this.publicSelectedKeys) {//已经选择的键 3
-                        var10000 = this.doSelect(var1);
+                for(Iterator var1 = this.keys.iterator(); var1.hasNext(); var1.remove()) {// key
+                    SelectionKeyImpl var2 = (SelectionKeyImpl)var1.next();
+                    this.deregister(var2);// channel deregister
+                    SelectableChannel var3 = var2.channel();
+                    if (!var3.isOpen() && !var3.isRegistered()) {
+                        ((SelChImpl)var3).kill();
                     }
                 }
 
-                return var10000;
+                this.totalChannels = 0;
             }
+
+            this.fd0 = -1;
+            this.fd1 = -1;
         }
 
-
-SelectionKey cancel()
-
-
-    public final void cancel() {
-        // Synchronizing "this" to prevent this key from getting canceled
-        // multiple times by different threads, which might cause race
-        // condition between selector's select() and channel's close().
-        synchronized (this) {
-            if (valid) {
-                valid = false;
-                ((AbstractSelector)selector()).cancel(this);
-            }
-        }
     }
 
-
-AbstractSelector cancle()
-    void cancel(SelectionKey k) {                       // package-private
-        synchronized (cancelledKeys) {
-            cancelledKeys.add(k);
-        }
-    }
-
-
-close() 和 select() 都会阻塞直到这个过程结束
-
 ```
-## 异步关闭功能
+### interrupt()
 ```
-多线程情况下任何时候都可能 selector.colse()  key.cancel()
-
- private int lockAndDoSelect(long var1) throws IOException {
-        synchronized(this) {//selector 对象 1
-            if (!this.isOpen()) {
-                throw new ClosedSelectorException();
-            } else {
-                int var10000;
-                synchronized(this.publicKeys) {//已经注册的键 2
-                    synchronized(this.publicSelectedKeys) {//已经选择的键 3
-                        var10000 = this.doSelect(var1);
-                    }
-                }
-
-                return var10000;
-            }
-        }
-
-    public void implCloseSelector() throws IOException {
-        this.wakeup(); //1
-        synchronized(this) {//2
-            synchronized(this.publicKeys) {//3
-                synchronized(this.publicSelectedKeys) {//4
-                    this.implClose();
-                }
-            }
-
-        }
-    }
-
-
-seletc() 无限期阻塞
-另一个线程 close() 
-//1 执行 wakeUp() selector() 苏醒 向下执行
-//2 抢 selector   punlicKeys 和 selectedKeys 锁
-//执行  this.implClose(); 直到结束 所有SlectionCancel() 和 channel 退出选择器
+线程被唤醒
+此时执行channel write close 方法 将 throw CloseByInterruptedException
+if(current.isInterrupt())  Thread.interupted() 清除 interupted status 
 ```
-
-
-
-
-
-
