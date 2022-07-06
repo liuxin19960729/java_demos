@@ -39,12 +39,147 @@ such as
           只允许读的channel对象(write方法的执行 throw exception)  
 ```
 
-
-## FileChannle extends AbstractInterruptibleChannel
+## 同步关闭
+### 对 clsoe channel访问
 ```
+当channel 已经关闭，任然 access channel
+throw ClosedChannelException
+
+ ClosedChannelException
+    extends java.io.IOException
+```
+
+## 异步关闭 
+### FileChannle extends AbstractInterruptibleChannel
+```
+通过中断使InterruptedChannel 关闭
+
+类型一
 1.如果一个通道上线程被阻塞
 2.另一个线程 blockThread.interrupt() 
 3.通道关闭 通道产生ClosedByInterruptException
 
+类型二
+1.线程1把线程2中断(interrupt status=true)
+if(curentThread.isInterrupted()) 来判断 也可以清除interrupted status
+2.线程2 访问通道 通道立即关闭 throw CloseByInterrupException
+
+
+InterruptibleChannel interrupte  是异步关闭
+    即使当前通道阻塞执行某种操作  interrupte 线程
+    立即退出 throw AsynchronousClosedExceptioon 
 ```
+
+
+## Scatter  Gather
+```
+作用:在多个缓冲区实现IO操作
+
+gather:write() 收集
+   [bufer1[pos:0,limit10],bufer2[pos:3,limit5]....]
+   合并成
+    连接成一片大的内存
+scatter:
+   read()
+  按顺序读到多个缓冲区(将缓存区一个消耗完才进行下一个的操作)
+
+
+最大的性能优势:
+  ByteBuffer buffer = ByteBuffer.allocateDirect(100); 性能最好
+  
+ jvm 堆内的内存在 read 和 write 会先创建临时 direcorBuffer 在进行拷贝
+
+```
+
+## FileChannel
+```
+FileChannel 没记继承 abstract  SelectableChannel
+所以FileChannel 不支持非阻塞
+fileChannel 总是阻塞式的
+os 多层缓存机制和预取机制 所以请求磁盘会延迟较少
+
+FileChannel 是线程安全
+
+file --write append remove  等修改 file大小操作必须是单线程来执行
+
+FileChannel 是反应jvm 对外部具体对象的一个抽象。同一个jvm 上看到的fileChannel 视图的实例是一致的,(不是同一个jvm并不保证)
+  同一个jvm进程 多个线程报保证 fileChannel 视图一致
+
+多个进程 jvm并不保证 ，而是由OS +file system 保证,一般而言是一致的
+
+```
+
+### Channel 和RandomAccessFile API区别
+```
+read
+     RandomAccessFile accessFile = new RandomAccessFile(completePath, "rws");
+        FileChannel channel = accessFile.getChannel();
+        accessFile.read();
+        channel.read()
+     EOF 返回 -1
+
+write
+        accessFile.write();
+        channel.write()
+        
+
+size :文件带下
+        accessFile.length();
+        channel.size()
+文件位置
+       accessFile.getFilePointer();
+          channel.position() 返回当前文件指针指的位置
+设置文件指针位置
+            accessFile.seek();
+            channel.position(pos)设置文件指针位置
+                 pos <0 throw IllegalArgumenException
+                 pos>file len 
+            
+            [a,b,c,EOF,[..文件空洞....]a,b,c] pos=100;  read return eof
+            write : abc  
+            文件空洞:磁盘只会写入实际写入的数据分配空间
+                 例[a,b,c........d.e]
+                磁盘实际只写入abcde 中间的那些0实际是不写入的
+                我们看到的文件大小可能只有10kb 但是读取到内存可能有很大，中间空洞的数据大部分是0
+ 
+        accessFile.seek(length <= 2 ? 0 : length - 2); //设置文件指针
+        FileChannel channel = accessFile.getChannel();
+        System.out.println(channel.position()); //获取文件指针
+             通过fd-->os fileSystem获取
+
+长度设置
+   accessFile.setLength();
+        channel.truncate()
+
+同步
+  accessFile.getFD().sync();
+        channel.force();//强制将修改的数据全被输入到磁盘
+
+           channel.force(boolean metadata);  metadata false 只同步数据
+           true 同步数据+元数据(修改时间 所有者  权限等信息)
+  
+```
+## 文件锁定
+```
+文件锁的实现：OS+FileSystem 
+独占锁 
+共享锁：并不是所有OS都支持共享锁，若没有共享锁会升级为独占锁
+
+锁的对象：文件 对任何程序想要访问这个文件都会上锁
+    jvm 进程 获取独占文件锁
+        thread1 
+        thread2 
+        共享独占锁
+
+public abstract FileLock lock(long position, long size, boolean shared)
+
+share lock only read 权限
+exclusive lock r+w 权限
+
+size可以大于文件带下
+
+
+```
+
+
 
