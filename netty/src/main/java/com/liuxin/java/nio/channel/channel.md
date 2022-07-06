@@ -233,11 +233,36 @@ note:磁盘读取单位 4kb or 512 byte ,现在一般 4kb
 
 
 public final boolean isLoaded() 
+   判断被映射的文件是否还存在内存
+   true:映射缓冲区延迟少或者根本没有延迟,不能完全保证
+   false:不一定不是常驻缓冲区或不一定未完成常驻内存
+   
+isLoaded() 是暗示（底层操作内存分配动态 谁时可能 page in swap ）
 
-public final MappedByteBuffer load()
+public final MappedByteBuffer load()  小心使用load
     加载整个文件为常驻内存
 
+    操作代价较高,不应定能全部加载到内存，具体大小取决于文件被映射区域实际大小 
+    
+    文件并不能保证加载到内存里面的数据就是常驻(新的其他加载进来-->被替换) 动态存在
+
+2.
+对于那些要求近乎实时的程序，解决方案预加载
+
+具有交互性和事件驱动的程序：提前加载消耗非常不划算
+    解决方案：分摊页进行调入只加入需要的部分(减少IO活动次数)
+
+主要作用 提前访问埋单，以防后面可以直接访问,这样访问速度可能更加快
+
 public final MappedByteBuffer force()
+  当使用mappedbuffer 进行修改时不能使用 FileChannel进行更新(fileChannel.force()不知道数据改变)
+
+MAP_MODEL.READ_ONLY MAP_MODEL.RRIVATE
+FileChannel.MapMode.PRIVATE 在写时拷贝 
+   put() 修改 只有MappedByteBuffer 可以看到
+   必须 rw权限打开
+上面的两种操作 force() 执行 并不起作用(没有修改到 虚拟内存对应的物理夜上)
+
 
 ```
 
