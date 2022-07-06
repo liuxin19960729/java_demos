@@ -262,7 +262,9 @@ FileChannel.MapMode.PRIVATE 在写时拷贝
    put() 修改 只有MappedByteBuffer 可以看到
    必须 rw权限打开
 上面的两种操作 force() 执行 并不起作用(没有修改到 虚拟内存对应的物理夜上)
-
+```
+## SocketChannel
+```
 
 ```
 
