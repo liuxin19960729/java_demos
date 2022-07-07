@@ -64,6 +64,14 @@ read() 和 write()必须是在 isConnect()==true 的状态下才允许read() wri
 
 非阻塞模式 read() write() 要么发送/接收完全 要么一点没发送/接收
 
+note:read wrie 没有连接 throw NotYetConnectedException
+
+数据报适用于有哪些特点的程序
+  1.允许程序接受数据的丢失
+  2.只管发送而不在意是否发送成功
+  3.吞吐量比可靠性重要
+  4.多播 或 广播 
+  
 
 
 ````
