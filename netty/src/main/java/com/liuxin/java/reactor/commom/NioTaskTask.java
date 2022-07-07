@@ -2,11 +2,11 @@ package com.liuxin.java.reactor.commom;
 
 import java.nio.channels.SocketChannel;
 
-public class SocketChannelOpsTask {
+public class NioTaskTask {
     private int OPS;
     private SocketChannel socketChannel;
 
-    public SocketChannelOpsTask(int OPS, SocketChannel socketChannel) {
+    public NioTaskTask(SocketChannel socketChannel, int OPS) {
         this.OPS = OPS;
         this.socketChannel = socketChannel;
     }
