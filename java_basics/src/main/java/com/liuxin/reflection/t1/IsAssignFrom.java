@@ -1,4 +1,4 @@
-package com.liuxin.reflection;
+package com.liuxin.reflection.t1;
 
 public class IsAssignFrom extends ZZ implements IZZ {
     public static void main(String[] args) {
