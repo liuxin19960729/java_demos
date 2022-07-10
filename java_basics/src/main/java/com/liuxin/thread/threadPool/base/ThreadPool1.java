@@ -1,9 +1,5 @@
-package com.liuxin.threadPool.base;
+package com.liuxin.thread.threadPool.base;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 

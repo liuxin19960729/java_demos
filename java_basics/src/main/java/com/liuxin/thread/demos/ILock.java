@@ -1,4 +1,7 @@
 package com.liuxin.thread.demos;
 
-public class ILock {
+public interface ILock {
+    void lock();
+
+    void unlock();
 }

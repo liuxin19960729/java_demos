@@ -1,4 +1,4 @@
-//package com.liuxin.threadPool.custom;
+//package com.liuxin.thread.threadPool.custom;
 //
 //import java.util.List;
 //import java.util.Objects;
